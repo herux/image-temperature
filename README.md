@@ -1,2 +1,2 @@
 # image-temperature
-Adapt the temperature by changing its image's color
+Adjust the temperature by changing the color of the image
