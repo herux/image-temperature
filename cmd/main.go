@@ -22,6 +22,7 @@ func main() {
 	}
 
 	ica := imagetemperature.New(*imageInFilename, *imageOutFilename)
-	newImage := ica.ByTemperature(*temperature)
+	// newImage := ica.ByTemperature(*temperature)
+	newImage := ica.ByTemperatureUsingGift(*temperature)
 	ica.SaveToFile(newImage)
 }

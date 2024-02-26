@@ -1,3 +1,4 @@
+// Package provide a set of image processing filters by temperature
 package imagetemperature
 
 import (
@@ -5,7 +6,10 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
+	"math"
 	"os"
+
+	"github.com/disintegration/gift"
 )
 
 type ImageColorAdjuster struct {
@@ -32,6 +36,27 @@ func New(Infilename, Outfilename string) *ImageColorAdjuster {
 	}
 }
 
+// this function change the image color by temperature
+// using GIFT library, https://github.com/disintegration/gift
+func (ica *ImageColorAdjuster) ByTemperatureUsingGift(temperature float64) image.Image {
+	g := gift.New()
+	var ish_value float32
+	if temperature < 0 {
+		// blue color hue range start from
+		ish_value = 222 + float32(math.Abs(temperature))
+	} else {
+		// red color hue range start from
+		ish_value = 0 + float32(temperature)
+	}
+	g.Add(gift.Colorize(ish_value, 100, 100))
+	newImage := image.NewRGBA(g.Bounds(ica.image.Bounds()))
+
+	g.Draw(newImage, ica.image)
+	return newImage
+}
+
+// this function change the image color by temperature
+// using default GO library, need to improve a lot
 func (ica *ImageColorAdjuster) ByTemperature(temperature float64) image.Image {
 	bounds := ica.image.Bounds()
 	newImg := image.NewRGBA(bounds)
@@ -39,11 +64,11 @@ func (ica *ImageColorAdjuster) ByTemperature(temperature float64) image.Image {
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			originColor := ica.image.At(x, y)
-			r, g, b, _ := originColor.RGBA()
 
+			r, g, b, _ := originColor.RGBA()
 			newR := uint8(float64(r) * temperature)
-			newG := uint8(float64(g))
-			newB := uint8(float64(b))
+			newG := uint8(float64(g) * temperature)
+			newB := uint8(float64(b) * temperature)
 
 			newR = ica.min(ica.max(newR, 0), 255)
 			newB = ica.min(ica.max(newB, 0), 255)
